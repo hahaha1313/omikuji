@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>御神籤 · 오미쿠지</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0a0806;
+    --deep: #110d0a;
+    --red: #8b1a1a;
+    --red-bright: #c0392b;
+    --gold: #c9a84c;
+    --gold-dim: #7a6030;
+    --paper: #f0e6d3;
+    --paper-dark: #d4c4a8;
+    --ink: #1a1008;
+    --white-dim: #c8bfb0;
+    --grey: #4a3f35;
+  }
+
+  body {
+    background: var(--black);
+    color: var(--white-dim);
+    font-family: 'Noto Serif JP', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.85) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 60px 24px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .site-header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .shrine-mark {
+    font-size: 12px;
+    letter-spacing: 0.4em;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .site-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(48px, 10vw, 80px);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--paper);
+    line-height: 1;
+  }
+
+  .site-title-en {
+    display: block;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.5em;
+    color: var(--gold-dim);
+    margin-top: 16px;
+    text-transform: uppercase;
+  }
+
+  .divider {
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, transparent, var(--red), transparent);
+    margin: 0 auto 56px;
+  }
+
+  .draw-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+  }
+
+  .draw-prompt {
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    color: var(--grey);
+    text-align: center;
+  }
+
+  .omikuji-box {
+    width: 120px;
+    height: 160px;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+
+  .omikuji-box:hover { transform: translateY(-4px); }
+  .omikuji-box:hover .box-body {
+    box-shadow: 0 0 40px rgba(139,26,26,0.4), 0 20px 60px rgba(0,0,0,0.8);
+  }
+
+  .box-body {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(160deg, #1a0f0a 0%, #0f0805 60%, #1a0f0a 100%);
+    border: 1px solid var(--red);
+    box-shadow: 0 0 20px rgba(139,26,26,0.2), 0 10px 40px rgba(0,0,0,0.7);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .box-label {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 18px;
+    letter-spacing: 0.2em;
+    color: var(--red);
+    writing-mode: vertical-rl;
+    opacity: 0.6;
+  }
+
+  .box-lid {
+    position: absolute;
+    top: -8px;
+    left: -4px;
+    right: -4px;
+    height: 20px;
+    background: linear-gradient(to bottom, #2a1510, #1a0f0a);
+    border: 1px solid var(--red);
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    10% { transform: translateX(-4px) rotate(-1deg); }
+    20% { transform: translateX(4px) rotate(1deg); }
+    30% { transform: translateX(-6px) rotate(-2deg); }
+    40% { transform: translateX(6px) rotate(2deg); }
+    50% { transform: translateX(-4px) rotate(-1deg); }
+    60% { transform: translateX(4px) rotate(1deg); }
+    70% { transform: translateX(-3px) rotate(-0.5deg); }
+    80% { transform: translateX(3px) rotate(0.5deg); }
+    90% { transform: translateX(-2px); }
+  }
+
+  .omikuji-box.shaking { animation: shake 0.8s ease-in-out; }
+
+  .result-area {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .result-area.visible { display: flex; }
+
+  .omikuji-slip {
+    width: 200px;
+    background: var(--paper);
+    transform-origin: top center;
+    animation: unroll 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    box-shadow: 4px 4px 20px rgba(0,0,0,0.8), -2px 0 8px rgba(0,0,0,0.4);
+  }
+
+  @keyframes unroll {
+    from { transform: scaleY(0); opacity: 0; }
+    to { transform: scaleY(1); opacity: 1; }
+  }
+
+  .slip-inner {
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+  }
+
+  .slip-top-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--red);
+    position: absolute;
+    top: 0; left: 0;
+  }
+
+  .slip-bottom-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--red);
+    position: absolute;
+    bottom: 0; left: 0;
+  }
+
+  .slip-number {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--ink);
+    opacity: 0.4;
+  }
+
+  .fortune-rank {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+    text-align: center;
+  }
+
+  .fortune-rank.daikichi { color: #7a0000; }
+  .fortune-rank.kichi { color: #1a4a10; }
+  .fortune-rank.chukichi { color: #0a2a5c; }
+  .fortune-rank.shokichi { color: #4a3a10; }
+  .fortune-rank.suekichi { color: #3a2050; }
+  .fortune-rank.kyo, .fortune-rank.daikyo { color: #1a0806; }
+
+  .fortune-rank-en {
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    color: var(--ink);
+    opacity: 0.5;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .slip-line {
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(26,16,8,0.3), transparent);
+  }
+
+  .fortune-text {
+    font-size: 12px;
+    line-height: 2;
+    color: var(--ink);
+    text-align: center;
+    opacity: 0.72;
+    padding: 0 8px;
+    word-break: keep-all;
+  }
+
+  .slip-seal {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--red);
+    opacity: 0.6;
+  }
+
+  .again-btn {
+    background: none;
+    border: 1px solid var(--grey);
+    color: var(--grey);
+    padding: 12px 40px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+  }
+
+  .again-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .site-footer {
+    margin-top: 80px;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--grey);
+    opacity: 0.4;
+    text-align: center;
+  }
+
+  .deco-line-left, .deco-line-right {
+    position: fixed;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent 10%, var(--red) 50%, transparent 90%);
+    opacity: 0.1;
+  }
+  .deco-line-left { left: 40px; }
+  .deco-line-right { right: 40px; }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .site-header { animation: fade-in 0.8s 0.1s both; }
+  .divider { animation: fade-in 0.6s 0.3s both; }
+  .draw-section { animation: fade-in 0.6s 0.5s both; }
+
+  .particle {
+    position: fixed;
+    border-radius: 50%;
+    background: var(--red);
+    pointer-events: none;
+    animation: float-up linear forwards;
+    opacity: 0;
+  }
+
+  @keyframes float-up {
+    0% { transform: translateY(0) translateX(0); opacity: 0.5; }
+    100% { transform: translateY(-80vh) translateX(var(--drift)); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deco-line-left"></div>
+<div class="deco-line-right"></div>
+
+<div class="container">
+  <header class="site-header">
+    <p class="shrine-mark">神社 &middot; Shrine Oracle</p>
+    <h1 class="site-title">
+      御神籤
+      <span class="site-title-en">Omikuji &middot; 오미쿠지</span>
+    </h1>
+  </header>
+
+  <div class="divider"></div>
+
+  <section class="draw-section" id="drawSection">
+    <p class="draw-prompt">제비를 흔들어 운명을 열어라</p>
+
+    <div class="omikuji-box" id="omikujiBox" onclick="drawFortune()">
+      <div class="box-lid"></div>
+      <div class="box-body">
+        <span class="box-label">御神籤</span>
+      </div>
+    </div>
+
+    <p class="draw-prompt" style="font-size:11px;opacity:0.4;">箱を振って運命を引け</p>
+  </section>
+
+  <section class="result-area" id="resultArea">
+    <div class="omikuji-slip" id="omikujiSlip">
+      <div class="slip-inner">
+        <div class="slip-top-bar"></div>
+        <p class="slip-number" id="slipNumber">No. —</p>
+        <div class="fortune-rank" id="fortuneRank"></div>
+        <p class="fortune-rank-en" id="fortuneRankEn"></p>
+        <div class="slip-line"></div>
+        <p class="fortune-text" id="fortuneText"></p>
+        <p class="slip-seal">● 神社之印 ●</p>
+        <div class="slip-bottom-bar"></div>
+      </div>
+    </div>
+
+    <button class="again-btn" onclick="resetFortune()">다시 뽑기 &middot; もう一度</button>
+  </section>
+
+  <footer class="site-footer">
+    <p>운세는 마음의 나침반 &middot; 占いは心の羅針盤</p>
+  </footer>
+</div>
+
+<script>
+const fortunes = [
+  {
+    rank: '大吉', rankEn: 'Daikichi · 대길', cls: 'daikichi',
+    texts: [
+      '하늘이 당신 편이다. 두려움 없이 나아가라. 멈춰있던 모든 것이 움직이기 시작한다.',
+      '기다리던 빛이 마침내 당신에게 닿는다. 무엇을 시작해도 좋은 때다.',
+      '모든 방향이 열려있다. 과감히 선택하라. 그 선택이 운명을 바꾼다.',
+    ]
+  },
+  {
+    rank: '吉', rankEn: 'Kichi · 길', cls: 'kichi',
+    texts: [
+      '좋은 흐름이 당신을 따른다. 서두르지 말고, 그러나 머뭇거리지도 말라.',
+      '인연이 당신 곁에 있다. 혼자라고 느낄 때, 손을 내밀어라.',
+      '평온하게 흐르는 날들 속에 작은 기적이 숨어있다. 놓치지 마라.',
+    ]
+  },
+  {
+    rank: '中吉', rankEn: 'Chūkichi · 중길', cls: 'chukichi',
+    texts: [
+      '급하지 않아도 된다. 꾸준히 나아가면 길이 보인다.',
+      '완성은 멀리 있지 않다. 지금 하고 있는 것을 계속하라.',
+      '잔잔한 파도가 결국 해안에 닿듯, 노력이 결실을 맺는다.',
+    ]
+  },
+  {
+    rank: '小吉', rankEn: 'Shōkichi · 소길', cls: 'shokichi',
+    texts: [
+      '작은 행운이 당신 주위에 있다. 크게 보려 하지 않으면 보인다.',
+      '눈앞의 일에 충실하라. 원하는 것은 조금 더 기다린 후에 온다.',
+      '지금은 준비의 시간이다. 뿌린 씨앗이 언젠가 싹을 틔운다.',
+    ]
+  },
+  {
+    rank: '末吉', rankEn: 'Suekichi · 말길', cls: 'suekichi',
+    texts: [
+      '지금은 어두워 보여도, 끝에 빛이 있다. 포기하지 마라.',
+      '서두르면 잃는다. 천천히, 단단하게 쌓아나가라.',
+      '운은 이제 시작을 준비 중이다. 조금 더 인내하라.',
+    ]
+  },
+  {
+    rank: '凶', rankEn: 'Kyō · 흉', cls: 'kyo',
+    texts: [
+      '지금은 멈춰야 할 때다. 나아가려 할수록 멀어진다.',
+      '헛된 욕심을 내려놓아라. 비워야 채울 수 있다.',
+      '위험이 곁에 있다. 경솔한 행동을 삼가고 조용히 때를 기다려라.',
+    ]
+  },
+  {
+    rank: '大凶', rankEn: 'Daikyō · 대흉', cls: 'daikyo',
+    texts: [
+      '모든 것이 거스를 것이다. 그러나 두려워 마라. 대흉 뒤에 대길이 온다.',
+      '지금 당신이 짊어진 것이 무겁더라도, 이것이 가장 어두운 밤이다. 새벽은 반드시 온다.',
+      '억지로 움직이지 마라. 지금은 폭풍 속에 있다. 폭풍은 언제나 끝난다.',
+    ]
+  }
+];
+
+const weights = [20, 25, 20, 15, 10, 7, 3];
+
+function pick() {
+  const total = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < weights.length; i++) { r -= weights[i]; if (r <= 0) return i; }
+  return 0;
+}
+
+function spawnParticles() {
+  for (let i = 0; i < 14; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = (25 + Math.random() * 50) + '%';
+      p.style.bottom = '30%';
+      const sz = 1 + Math.random() * 2;
+      p.style.width = sz + 'px';
+      p.style.height = sz + 'px';
+      p.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+      p.style.animationDuration = (3 + Math.random() * 4) + 's';
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 8000);
+    }, i * 60);
+  }
+}
+
+let busy = false;
+
+function drawFortune() {
+  if (busy) return;
+  busy = true;
+  const box = document.getElementById('omikujiBox');
+  box.classList.add('shaking');
+  spawnParticles();
+
+  setTimeout(() => {
+    box.classList.remove('shaking');
+    const f = fortunes[pick()];
+    const txt = f.texts[Math.floor(Math.random() * f.texts.length)];
+    const num = String(Math.floor(Math.random() * 99) + 1).padStart(3, '0');
+
+    document.getElementById('slipNumber').textContent = 'No. ' + num;
+    const rEl = document.getElementById('fortuneRank');
+    rEl.textContent = f.rank;
+    rEl.className = 'fortune-rank ' + f.cls;
+    document.getElementById('fortuneRankEn').textContent = f.rankEn;
+    document.getElementById('fortuneText').textContent = txt;
+
+    const slip = document.getElementById('omikujiSlip');
+    slip.style.animation = 'none';
+    slip.offsetHeight;
+    slip.style.animation = '';
+
+    document.getElementById('drawSection').style.display = 'none';
+    document.getElementById('resultArea').classList.add('visible');
+    busy = false;
+  }, 900);
+}
+
+function resetFortune() {
+  document.getElementById('resultArea').classList.remove('visible');
+  document.getElementById('drawSection').style.display = 'flex';
+  busy = false;
+}
+</script>
+</body>
+</html>
