@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script>
+(function() {
+  try {
+    var f = localStorage.getItem('fortune');
+    if (!f) {
+      alert('운세를 뽑지 않은 사용자는 이벤트 페이지에 접근할 수 없습니다.\n운세 뽑기 페이지로 이동합니다.');
+      location.replace('index.html');
+    }
+  } catch(e) {
+    location.replace('index.html');
+  }
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>이벤트 응모 | 신사 악귀의 속삭임</title>

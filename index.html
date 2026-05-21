@@ -13,8 +13,29 @@
 // 이벤트 버튼 — 운세 미뽑기 시 먼저 뽑고, 뽑은 후 event.html로 이동
 function goEvent(){
   if(document.getElementById('resultArea').classList.contains('visible')){
-    location.href='event.html'; // 이미 뽑음 → 바로 이동
+    try {
+      var rankText = document.getElementById('rank') ? document.getElementById('rank').textContent.trim() : '';
+      var fortuneText = document.getElementById('fortuneText') ? document.getElementById('fortuneText').textContent.trim() : '';
+      if(rankText) {
+        localStorage.setItem('fortune', JSON.stringify({rank: rankText, text: fortuneText}));
+      }
+    } catch(e){}
+    location.href='event.html';
   } else {
+    alert('운세를 먼저 뽑으셔야 이벤트에 응모하실 수 있습니다. 운세 뽑기를 시작합니다!');
+    if(typeof draw === 'function') { draw(); }
+  }
+}));
+      }
+    } catch(e){}
+    location.href='event.html';
+  } else {
+    alert('운세를 뽑지 않으셨습니다. 운세를 먼저 뽑아주세요!');
+    if(typeof draw === 'function') {
+      draw();
+    }
+  }
+} else {
     draw(); // 먼저 운세 뽑기 → 결과 후 버튼으로 이동 가능
   }
 }
@@ -40,6 +61,14 @@ function restoreFromUrl(){
   document.getElementById('drawSection').style.display='none';
   document.getElementById('landingHeader').style.display='none';
   document.getElementById('resultArea').classList.add('visible');
+    try {
+      var rankText = document.getElementById('rank') ? document.getElementById('rank').textContent.trim() : '';
+      var fortuneText = document.getElementById('fortuneText') ? document.getElementById('fortuneText').textContent.trim() : '';
+      if(rankText) {
+        localStorage.setItem('fortune', JSON.stringify({rank: rankText, text: fortuneText}));
+      }
+    } catch(e){}
+  try{localStorage.setItem('fortune', JSON.stringify({rank: f.rank, text: v.msg}));}catch(e){}
   busy=true;
 }
 restoreFromUrl();
@@ -839,6 +868,14 @@ function draw(){
     document.getElementById('drawSection').style.display='none';
     document.getElementById('landingHeader').style.display='none';
     document.getElementById('resultArea').classList.add('visible');
+    try {
+      var rankText = document.getElementById('rank') ? document.getElementById('rank').textContent.trim() : '';
+      var fortuneText = document.getElementById('fortuneText') ? document.getElementById('fortuneText').textContent.trim() : '';
+      if(rankText) {
+        localStorage.setItem('fortune', JSON.stringify({rank: rankText, text: fortuneText}));
+      }
+    } catch(e){}
+  try{localStorage.setItem('fortune', JSON.stringify({rank: f.rank, text: v.msg}));}catch(e){}
     // 결과 BGM 재생
     const ra=document.getElementById('resultAudio');
     ra.currentTime=0; ra.play().catch(()=>{});
@@ -878,8 +915,29 @@ async function openShare(){
 // ── 이벤트 버튼: 운세 먼저 뽑고 이동 ──
 function goEvent(){
   if(document.getElementById('resultArea').classList.contains('visible')){
+    try {
+      var rankText = document.getElementById('rank') ? document.getElementById('rank').textContent.trim() : '';
+      var fortuneText = document.getElementById('fortuneText') ? document.getElementById('fortuneText').textContent.trim() : '';
+      if(rankText) {
+        localStorage.setItem('fortune', JSON.stringify({rank: rankText, text: fortuneText}));
+      }
+    } catch(e){}
     location.href='event.html';
   } else {
+    alert('운세를 먼저 뽑으셔야 이벤트에 응모하실 수 있습니다. 운세 뽑기를 시작합니다!');
+    if(typeof draw === 'function') { draw(); }
+  }
+}));
+      }
+    } catch(e){}
+    location.href='event.html';
+  } else {
+    alert('운세를 뽑지 않으셨습니다. 운세를 먼저 뽑아주세요!');
+    if(typeof draw === 'function') {
+      draw();
+    }
+  }
+} else {
     draw();
   }
 }
@@ -904,6 +962,14 @@ function restoreFromUrl(){
   document.getElementById('drawSection').style.display='none';
   document.getElementById('landingHeader').style.display='none';
   document.getElementById('resultArea').classList.add('visible');
+    try {
+      var rankText = document.getElementById('rank') ? document.getElementById('rank').textContent.trim() : '';
+      var fortuneText = document.getElementById('fortuneText') ? document.getElementById('fortuneText').textContent.trim() : '';
+      if(rankText) {
+        localStorage.setItem('fortune', JSON.stringify({rank: rankText, text: fortuneText}));
+      }
+    } catch(e){}
+  try{localStorage.setItem('fortune', JSON.stringify({rank: f.rank, text: v.msg}));}catch(e){}
   busy=true;
 }
 restoreFromUrl();
