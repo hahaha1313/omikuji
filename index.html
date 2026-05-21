@@ -769,15 +769,23 @@ function draw(){
     const s=document.querySelector('.omikuji-slip');s.style.animation='none';s.offsetHeight;s.style.animation='';
     document.getElementById('drawSection').style.display='none';
     document.getElementById('resultArea').classList.add('visible');
+  // [안전 로직] 뽑힌 운세 데이터를 로컬 스토리지에 즉시 저장하여 event.html과 연동
+  try {
+    var rankText = document.getElementById('rank') ? document.getElementById('rank').textContent.trim() : '';
+    var fortuneText = document.getElementById('fortuneText') ? document.getElementById('fortuneText').textContent.trim() : '';
+    if(rankText) {
+      localStorage.setItem('fortune', JSON.stringify({rank: rankText, text: fortuneText}));
+    }
+  } catch(e){}
     // 결과 BGM 재생
     const ra=document.getElementById('resultAudio');
     if(ra) {
-      try { ra.currentTime=0; ra.play().catch(()=>{}); } catch(e){}
+      try { ra.currentTime=0; if(ra){ra.play()}.catch(()=>{}); } catch(e){}
     }
     busy=false;track('fortune_draw','',f.rank);
   },960);
 }
-function reset(){document.getElementById('resultArea').classList.remove('visible');document.getElementById('drawSection').style.display='flex';const ra=document.getElementById('resultAudio');if(ra){try{ra.pause();ra.currentTime=0;}catch(e){}}busy=false;}
+function reset(){document.getElementById('resultArea').classList.remove('visible');document.getElementById('drawSection').style.display='flex';const ra=document.getElementById('resultAudio');if(ra){try{if(ra){ra.pause()};ra.currentTime=0;}catch(e){}}busy=false;}
 
 // Share
 function openShare(){document.getElementById('shareModal').classList.add('open');}
